@@ -30,7 +30,6 @@ services:
       python api_shop/manage.py migrate &&
       python api_shop/manage.py runserver 0.0.0.0:8000
       "
-
     volumes:
       - .:/app
       - static_value:/static/

@@ -9,10 +9,6 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR.parent / ".env")
 
-
-def getenv_bool(variable_name: str, default: bool = False) -> bool:
-    raw_value = os.getenv(variable_name)
-
     if raw_value is None:
         return default
 
@@ -104,7 +100,6 @@ CORS_ALLOWED_ORIGINS = getenv_list("CORS_ALLOWED_ORIGINS")
 CSRF_TRUSTED_ORIGINS = getenv_list("CSRF_TRUSTED_ORIGINS")
 
 APPEND_SLASH = True
-
 
 INSTALLED_APPS = [
     "jazzmin",
@@ -249,13 +244,11 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
-    "DEFAULT_THROTTLE_CLASSES": [
-        "rest_framework.throttling.AnonRateThrottle",
-    ],
-    "DEFAULT_THROTTLE_RATES": {
-        "refresh_limit": "10/minute",
-        "anon": "5/minute",
-    },
+    
+    "DEFAULT_FILTER_BACKENDS": [
+    "django_filters.rest_framework.DjangoFilterBackend"
+],
+
 }
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
