@@ -48,7 +48,7 @@ pyasn1==0.6.3
 pyasn1_modules==0.4.2
 pycparser==3.0
 PyJWT==2.11.0
-python-crontab==3.3.0
+python-crontab==3.4.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 PyYAML==6.0.3
