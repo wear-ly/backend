@@ -6,8 +6,12 @@ from categories.serializers import (
     SubcategorySerializer,
 )
 
+class CategoryListAPIView(ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
-class CategoryViewSet(ModelViewSet):
+
+class CategoryRetrieveAPIView(RetrieveAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = "id"
@@ -17,4 +21,3 @@ class SubcategoryViewSet(ModelViewSet):
     queryset = Subcategory.objects.select_related("category")
     serializer_class = SubcategorySerializer
     lookup_field = "id"
-    
