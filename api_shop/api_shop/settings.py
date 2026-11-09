@@ -14,6 +14,8 @@ CLOUDINARY_STORAGE = {
     "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
 }
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR.parent / ".env")
 
 SECRET_KEY = os.getenv('SECRET')
 
@@ -52,7 +54,6 @@ if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(RENDER_EXTERNAL_HOSTNAME)
 
 APPEND_SLASH = True
-
 
 INSTALLED_APPS = [
     'jazzmin',
@@ -186,13 +187,11 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-    ],
-    'DEFAULT_THROTTLE_RATES': {
-        'refresh_limit': '10/minute',
-        'anon': '5/minute',
-    },
+    
+    "DEFAULT_FILTER_BACKENDS": [
+    "django_filters.rest_framework.DjangoFilterBackend"
+],
+
 }
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/1")
