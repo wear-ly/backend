@@ -44,7 +44,7 @@ platformdirs==4.9.2
 pre_commit==4.5.1
 prompt_toolkit==3.0.52
 psycopg2-binary==2.9.11
-pyasn1==0.6.3
+pyasn1==0.6.5
 pyasn1_modules==0.4.2
 pycparser==3.0
 PyJWT==2.11.0
