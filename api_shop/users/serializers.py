@@ -1,15 +1,87 @@
+import os
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Q
+from google.auth.transport import requests
+from google.oauth2 import id_token
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from users.models import Term, UserTermsAcceptance
 
 User = get_user_model()
+
+
+class GoogleAuthSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True)
+    accept_terms = serializers.BooleanField(write_only=True, required=True)
+
+    def validate_token(self, token):
+        try:
+            id_info = id_token.verify_oauth2_token(
+                token, requests.Request(), os.getenv('GOOGLE_CLIENT_ID')
+            )
+
+            if id_info['iss'] not in [
+                'accounts.google.com',
+                'https://accounts.google.com',
+            ]:
+                raise serializers.ValidationError('Wrong issuer.')
+
+            return id_info
+        except Exception as e:
+            raise serializers.ValidationError(
+                f'Invalid Google token: {str(e)}'
+            )
+
+    def validate_accept_terms(self, value):
+        if value is not True:
+            raise serializers.ValidationError(
+                "You must accept the user agreement."
+            )
+        return value
+
+    def create(self, validated_data):
+        id_info = validated_data.pop("token")
+        email = id_info.get("email").lower()
+
+        if not email:
+            raise serializers.ValidationError(
+                {"detail": "Email not provided by Google."}
+            )
+
+        with transaction.atomic():
+            user, created = User.objects.get_or_create(
+                email=email,
+                defaults={"is_active": True},
+            )
+
+            if not user.is_active:
+                raise serializers.ValidationError(
+                    {"detail": "User account is disabled."}
+                )
+
+            try:
+                terms = Term.objects.filter(is_active=True).latest(
+                    "created_at"
+                )
+
+                UserTermsAcceptance.objects.get_or_create(
+                    user=user, terms=terms
+                )
+            except Term.DoesNotExist:
+                pass
+
+        refresh = RefreshToken.for_user(user)
+
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }
 
 
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
@@ -58,6 +130,7 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
             )
 
         refresh = RefreshToken.for_user(user_obj)
+
         return {
             "refresh": str(refresh),
             "access": str(refresh.access_token),
@@ -134,6 +207,16 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class ActivationCodeSerializer(serializers.Serializer):
+    code = serializers.CharField(
+        required=True, max_length=6, min_length=6, help_text="Activation code"
+    )
+
+
+class ResendActivationCodeSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -142,14 +225,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-
-    def validate_email(self, value):
-        get_object_or_404(User, email=value)
-        return value
+    email = serializers.EmailField(required=True)
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=6, min_length=6, write_only=True)
     new_password = serializers.CharField(
         required=True, validators=[validate_password]
     )
@@ -162,14 +242,28 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         super().__init__(*args, **kwargs)
 
     def validate(self, attrs):
-        new_password = attrs["new_password"]
-        confirm_password = attrs["confirm_password"]
-
-        if new_password != confirm_password:
+        if attrs['new_password'] != attrs['confirm_password']:
             raise serializers.ValidationError(
-                {"confirm_password": "Password fields didn't match."}
+                {"password_confirm": "Passwords do not match."}
             )
 
+        code = attrs['code']
+
+        redis_key = f"password_reset:{code}:user_id"
+        user_id = cache.get(redis_key)
+
+        if not user_id:
+            raise serializers.ValidationError(
+                {"code": "Invalid or expired reset code."}
+            )
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"code": "User not found."})
+
+        attrs['user'] = user
+        attrs['redis_key'] = redis_key
         return attrs
 
     def save(self):

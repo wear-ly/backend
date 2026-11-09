@@ -2,40 +2,60 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-from addons.utils import getenv_bool, getenv_int
+from addons.utils import getenv_int
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR.parent / ".env")
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME"),
+    "API_KEY": os.getenv("CLOUDINARY_API_KEY"),
+    "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
+}
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR.parent / ".env")
 
 SECRET_KEY = os.getenv('SECRET')
 
 DEBUG = True
 
-DEBUG_TOOLBAR_CONFIG = {
-    'SHOW_TOOLBAR_CALLBACK': lambda request: True,
-}
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_HOST')
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+else:
+    ALLOWED_HOSTS.append('*')
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
 
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8000',
-    'http://localhost:3000',
-]
+CORS_ALLOWED_ORIGINS = (
+    os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
+    if os.getenv('CORS_ALLOWED_ORIGINS')
+    else []
+)
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-]
+CSRF_TRUSTED_ORIGINS = (
+    os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
+    if os.getenv('CSRF_TRUSTED_ORIGINS')
+    else []
+)
 
-ALLOWED_HOSTS = ['*']
+if RENDER_EXTERNAL_HOSTNAME:
+    CORS_ALLOWED_ORIGINS.append(RENDER_EXTERNAL_HOSTNAME)
+    CSRF_TRUSTED_ORIGINS.append(RENDER_EXTERNAL_HOSTNAME)
 
 APPEND_SLASH = True
 
-
-# Application definition
-
 INSTALLED_APPS = [
-    "django_filters",
     'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -43,26 +63,36 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders' 'rest_framework',
+    'corsheaders',
+    'rest_framework',
     'rest_framework_simplejwt',
     'drf_spectacular',
-    'debug_toolbar',
     'users',
     'profiles',
     'categories',
     'brands',
+    'products',
+    'product_variants',
+    'sizes',
+    'colors',
+    'product_images',
+    'discounts',
+    'currencies',
+    'favorites',
+    'cloudinary_storage',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'api_shop.urls'
@@ -133,6 +163,14 @@ STATICFILES_DIRS = ['media/']
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = 'media/'
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 REST_FRAMEWORK = {
     'DATE_FORMAT': '%d/%m/%Y',
@@ -149,38 +187,42 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+    
     "DEFAULT_FILTER_BACKENDS": [
-        "django_filters.rest_framework.DjangoFilterBackend"
-    ],
+    "django_filters.rest_framework.DjangoFilterBackend"
+],
+
 }
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/1")
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.getenv("REDIS_URL", "redis://redis:6379/1"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "IGNORE_EXCEPTIONS": False,
+        },
+    }
+}
 
 SUPER_LOGIN = os.getenv('SUPER_LOGIN')
 SUPER_PASSWORD = os.getenv('SUPER_PASSWORD')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-EMAIL_BACKEND = os.getenv(
-    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
-)
-EMAIL_HOST = os.getenv("EMAIL_HOST", "localhost")
-EMAIL_PORT = getenv_int("EMAIL_PORT", 25)
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
-EMAIL_USE_TLS = getenv_bool("EMAIL_USE_TLS")
-EMAIL_USE_SSL = getenv_bool("EMAIL_USE_SSL")
-ALGORITHM = os.getenv('ALGORITHM')
+EMAIL_BACKEND = "anymail.backends.brevo.EmailBackend"
 
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "kinoshort@support.com")
+ANYMAIL = {"BREVO_API_KEY": os.getenv("BREVO_API_KEY"), "REQUESTS_TIMEOUT": 10}
+
+
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
 ALGORITHM = os.getenv('ALGORITHM')
-
-DEFAULT_FROM_EMAIL = "shop@support.com"
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
@@ -222,3 +264,11 @@ PASSWORD_RESET_TIMEOUT = (
     int(os.getenv("PASSWORD_RESET_TIMEOUT_HR", 24)) * 60 * 60
 )
 REFRESH_TOKEN_TIMEOUT = int(os.getenv("REFRESH_TOKEN_TIMEOUT", 24)) * 60 * 60
+
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+    MIDDLEWARE.insert(3, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+
+    DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK': lambda request: False,
+    }
