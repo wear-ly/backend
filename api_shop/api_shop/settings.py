@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR.parent / ".env")
 
+
 def getenv_bool(variable_name: str, default: bool = False) -> bool:
     raw_value = os.getenv(variable_name)
 
@@ -26,6 +27,7 @@ def getenv_bool(variable_name: str, default: bool = False) -> bool:
     raise ImproperlyConfigured(
         f"{variable_name} must be a boolean value: true or false"
     )
+
 
 def getenv_int(variable_name: str, default: int | None = None) -> int:
     raw_value = os.getenv(variable_name)
@@ -247,11 +249,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
-    
-    "DEFAULT_FILTER_BACKENDS": [
-    "django_filters.rest_framework.DjangoFilterBackend"
-],
-
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
 }
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")

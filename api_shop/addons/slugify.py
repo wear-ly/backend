@@ -1,6 +1,7 @@
 from django.db.models import Model
 from django.utils.text import slugify
 
+
 def generate_unique_slug(model: type[Model], value: str) -> str:
     base_slug = slugify(value)
     slug = base_slug
