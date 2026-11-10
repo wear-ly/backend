@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR.parent / ".env")
 
+def getenv_bool(variable_name: str, default: bool = False) -> bool:
+    raw_value = os.getenv(variable_name)
+
     if raw_value is None:
         return default
 
@@ -23,7 +26,6 @@ load_dotenv(BASE_DIR.parent / ".env")
     raise ImproperlyConfigured(
         f"{variable_name} must be a boolean value: true or false"
     )
-
 
 def getenv_int(variable_name: str, default: int | None = None) -> int:
     raw_value = os.getenv(variable_name)
