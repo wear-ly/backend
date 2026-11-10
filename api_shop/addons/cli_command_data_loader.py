@@ -149,6 +149,15 @@ class DataLoader:
         self._upload_product_variants()
         self._upload_discounts()
 
+    @transaction.atomic
+    def run_reference_data(self):
+        self._write("Starting reference data loading...")
+
+        self._upload_brands()
+        self._upload_categories()
+        self._upload_colors()
+        self._upload_sizes()
+
     def _upload_brands(self):
 
         Brand.objects.bulk_create(
