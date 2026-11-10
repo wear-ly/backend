@@ -1,17 +1,10 @@
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer
+
+from profiles.models import Profile
 from users.serializers import UserSerializer
 
-from profiles.models import ClothingSize, Gender, Profile
 
-
-class ProfileSerializer(ModelSerializer):
-    gender = serializers.ChoiceField(
-        choices=Gender.choices(), source="get_gender_display"
-    )
-    clothing_size = serializers.ChoiceField(
-        choices=ClothingSize.choices(), source="get_clothing_size_display"
-    )
+class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
 
     class Meta:
