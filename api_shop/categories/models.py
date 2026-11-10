@@ -1,5 +1,6 @@
-from django.db import models
 from addons.mixins import TimeStampMixin
+from addons.slugify import generate_unique_slug
+from django.db import models
 
 
 class Category(TimeStampMixin):
@@ -14,15 +15,7 @@ class Category(TimeStampMixin):
             self.name = self.name.strip()
 
         if not self.slug:
-            base_slug = slugify(self.name)
-            slug = base_slug
-            counter = 1
-
-            while Category.objects.filter(slug=slug).exists():
-                slug = f"{base_slug}-{counter}"
-                counter += 1
-
-            self.slug = slug
+            self.slug = generate_unique_slug(Category, self.name)
 
         super().save(*args, **kwargs)
 
@@ -39,7 +32,7 @@ class Subcategory(TimeStampMixin):
     category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,
-        related_name="subcategories"
+        related_name="subcategories",
     )
 
     name = models.CharField(max_length=255, unique=True)
@@ -53,29 +46,10 @@ class Subcategory(TimeStampMixin):
             self.name = self.name.strip()
 
         if not self.slug:
-            base_slug = slugify(self.name)
-            slug = base_slug
-            counter = 1
+            self.slug = generate_unique_slug(Subcategory, self.name)
 
-            while Subcategory.objects.filter(slug=slug).exists():
-                slug = f"{base_slug}-{counter}"
-                counter += 1
+        super().save(*args, **kwargs)
 
-            self.slug = slug
-
-class Subcategory(TimeStampMixin):
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.CASCADE,
-        related_name="subcategories"
-    )
-
-    name = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField(unique=True)
-
-    is_active = models.BooleanField(default=True)
-    is_hidden = models.BooleanField(default=False)
-   
     def __str__(self):
         return self.name
 

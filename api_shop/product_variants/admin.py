@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from product_images.models import ProductImage
 
 from .models import ProductVariant
@@ -25,6 +24,7 @@ class ProductVariantAdmin(admin.ModelAdmin):
         "color",
         "gender",
         "stock",
+        "price",
         "is_active",
     )
     search_fields = (
