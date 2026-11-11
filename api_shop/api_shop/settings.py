@@ -66,10 +66,19 @@ DEBUG = getenv_bool("DEBUG", default=False)
 if APP_ENV in {"staging", "production"} and DEBUG:
     raise ImproperlyConfigured(f"DEBUG must be false when APP_ENV={APP_ENV}")
 
+
 ALLOWED_HOSTS = getenv_list("ALLOWED_HOSTS")
+
+render_hostname = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+
+if render_hostname:
+    ALLOWED_HOSTS.append(render_hostname)
 
 if not ALLOWED_HOSTS:
     raise ImproperlyConfigured("ALLOWED_HOSTS environment variable must be set")
+
+ALLOWED_HOSTS.extend(["localhost", "127.0.0.1"])
+ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))
 
 IS_LOCAL_ENV = APP_ENV == "local"
 
