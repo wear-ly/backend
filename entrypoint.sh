@@ -2,6 +2,11 @@
 
 set -e
 
+if [ "${SERVICE_ROLE:-web}" = "worker" ]; then
+    echo "--> Starting Celery worker..."
+    exec /opt/venv/bin/celery -A api_shop worker --loglevel=info
+fi
+
 echo "--> Collect staticfiles..."
 python api_shop/manage.py collectstatic --no-input
 
