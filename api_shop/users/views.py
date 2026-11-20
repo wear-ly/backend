@@ -1,6 +1,9 @@
+from addons.openapi import DetailResponseSerializer, TokenPairResponseSerializer
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.shortcuts import get_object_or_404
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from profiles.models import Profile
 from profiles.serializers import ProfileSerializer
 from rest_framework import status
@@ -27,6 +30,11 @@ from users.trottling import RefreshScopedThrottle
 User = get_user_model()
 
 
+@extend_schema_view(
+    post=extend_schema(
+        operation_id="googleAuth", responses={200: TokenPairResponseSerializer}
+    )
+)
 class GoogleAuthView(APIView):
     permission_classes = [AllowAny]
     serializer_class = GoogleAuthSerializer
@@ -39,11 +47,15 @@ class GoogleAuthView(APIView):
         return Response(tokens, status=status.HTTP_200_OK)
 
 
+@extend_schema_view(post=extend_schema(operation_id="refreshToken"))
 class CustomTokenRefreshView(TokenRefreshView):
     serializer_class = CustomTokenRefreshSerializer
     throttle_classes = [RefreshScopedThrottle]
 
 
+@extend_schema_view(
+    post=extend_schema(operation_id="registerUser", responses={201: OpenApiTypes.STR})
+)
 class RegistrationView(APIView):
     serializer_class = UserRegisterSerializer
     permission_classes = [AllowAny]
@@ -60,6 +72,7 @@ class RegistrationView(APIView):
         )
 
 
+@extend_schema_view(get=extend_schema(operation_id="getCurrentUser"))
 class CurrentUserView(APIView):
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
@@ -70,6 +83,11 @@ class CurrentUserView(APIView):
         return Response(serializer.data)
 
 
+@extend_schema_view(
+    patch=extend_schema(
+        operation_id="activateUser", responses={200: DetailResponseSerializer}
+    )
+)
 class ActivateUserView(APIView):
     serializer_class = ActivationCodeSerializer
     permission_classes = [AllowAny]
@@ -114,6 +132,11 @@ class ActivateUserView(APIView):
         )
 
 
+@extend_schema_view(
+    post=extend_schema(
+        operation_id="resendActivationCode", responses={200: DetailResponseSerializer}
+    )
+)
 class ResendActivationCodeView(APIView):
     serializer_class = ResendActivationCodeSerializer
     permission_classes = [AllowAny]
@@ -149,6 +172,7 @@ class ResendActivationCodeView(APIView):
         )
 
 
+@extend_schema_view(post=extend_schema(operation_id="login"))
 class CustomTokenObtainPairView(APIView):
     serializer_class = CustomTokenObtainPairSerializer
     permission_classes = [AllowAny]
@@ -159,6 +183,11 @@ class CustomTokenObtainPairView(APIView):
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
+@extend_schema_view(
+    post=extend_schema(
+        operation_id="requestPasswordReset", responses={200: DetailResponseSerializer}
+    )
+)
 class PasswordResetRequestView(APIView):
     serializer_class = PasswordResetRequestSerializer
     permission_classes = [AllowAny]
@@ -194,6 +223,11 @@ class PasswordResetRequestView(APIView):
         )
 
 
+@extend_schema_view(
+    post=extend_schema(
+        operation_id="confirmPasswordReset", responses={200: DetailResponseSerializer}
+    )
+)
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
     serializer_class = PasswordResetConfirmSerializer
@@ -221,6 +255,11 @@ class PasswordResetConfirmView(APIView):
         )
 
 
+@extend_schema_view(
+    post=extend_schema(
+        operation_id="changePassword", responses={200: DetailResponseSerializer}
+    )
+)
 class PasswordChangeView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = PasswordChangeSerializer
