@@ -283,6 +283,16 @@ SUPER_PASSWORD = os.getenv("SUPER_PASSWORD")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Default currency for cart and orders.
+DEFAULT_CURRENCY_CODE = os.getenv("DEFAULT_CURRENCY_CODE", "UAH").strip().upper()
+
+if not (
+    len(DEFAULT_CURRENCY_CODE) == 3
+    and DEFAULT_CURRENCY_CODE.isascii()
+    and DEFAULT_CURRENCY_CODE.isalpha()
+):
+    raise ImproperlyConfigured("DEFAULT_CURRENCY_CODE must be a 3-letter currency code")
+
 EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
 
 ANYMAIL = {
