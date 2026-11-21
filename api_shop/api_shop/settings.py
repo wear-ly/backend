@@ -232,7 +232,10 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "static"
 
 MEDIA_ROOT = BASE_DIR / "media"
-MEDIA_URL = "media/"
+
+# Allow each deployment environment to use a separate Cloudinary media folder.
+MEDIA_URL = os.getenv("MEDIA_URL", "media/")
+
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
