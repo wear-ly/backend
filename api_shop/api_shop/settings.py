@@ -254,7 +254,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 15,
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "addons.openapi.WearlyAutoSchema",
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
@@ -263,6 +263,31 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Wearly API",
+    "DESCRIPTION": (
+        "REST API of the Wearly online shop.\n\n"
+        "Authenticate via `POST /api/login/`, then send the `access` token "
+        "as `Authorization: Bearer <token>`. Refresh it with "
+        "`POST /api/token/refresh/`."
+    ),
+    "VERSION": "1.0.0",
+    "OAS_VERSION": "3.1.0",
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SERVE_INCLUDE_SCHEMA": False,
+    "ENUM_NAME_OVERRIDES": {
+        "ProductVariantGenderEnum": "product_variants.models.Gender",
+        "ProfileGenderEnum": "profiles.models.Gender",
+        "ProfileClothingSizeEnum": "profiles.models.ClothingSize",
+    },
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": True,
+        "filter": True,
+    },
 }
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")

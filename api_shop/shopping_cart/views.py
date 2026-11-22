@@ -1,3 +1,5 @@
+from addons.openapi import SingleObjectAutoSchema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -9,7 +11,9 @@ from .serializers import CartItemSerializer, ShoppingCartSerializer
 
 class ShoppingCartViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
+    schema = SingleObjectAutoSchema()
 
+    @extend_schema(operation_id="getCart", responses={200: ShoppingCartSerializer})
     def list(self, request):
         cart, _ = ShoppingCart.objects.get_or_create(
             user=request.user,
@@ -19,11 +23,27 @@ class ShoppingCartViewSet(ViewSet):
         return Response(serializer.data)
 
 
+@extend_schema_view(
+    list=extend_schema(operation_id="listCartItems"),
+    create=extend_schema(
+        operation_id="addCartItem",
+        responses={200: CartItemSerializer, 201: CartItemSerializer},
+    ),
+    retrieve=extend_schema(operation_id="getCartItem"),
+    update=extend_schema(operation_id="updateCartItem"),
+    partial_update=extend_schema(
+        operation_id="patchCartItem",
+        responses={200: CartItemSerializer, 204: None},
+    ),
+    destroy=extend_schema(operation_id="deleteCartItem"),
+)
 class CartItemViewSet(ModelViewSet):
     serializer_class = CartItemSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return CartItem.objects.none()
         return CartItem.objects.filter(
             cart__user=self.request.user,
         ).select_related("cart", "product_variant")

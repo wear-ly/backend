@@ -11,3 +11,6 @@ seed:
 
 superuser:
 	docker compose exec web python $(MANAGE) create_default_superuser
+
+openapi:
+	docker compose exec web python $(MANAGE) spectacular --file openapi.yaml --validate --fail-on-warn
