@@ -9,8 +9,10 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
+            "name_eng",
             "slug",
             "description",
+            "description_eng",
             "brand",
             "subcategory",
             "is_active",

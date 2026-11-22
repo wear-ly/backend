@@ -6,11 +6,21 @@ from django.db import models
 
 class Product(TimeStampMixin):
     name = models.CharField(max_length=255, unique=True)
+    name_eng = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Name_ENG",
+    )
     slug = models.SlugField(unique=True)
 
     description = models.TextField(
         max_length=500,
         blank=True,
+    )
+    description_eng = models.TextField(
+        max_length=500,
+        blank=True,
+        verbose_name="Description_ENG",
     )
     brand = models.ForeignKey(
         Brand,

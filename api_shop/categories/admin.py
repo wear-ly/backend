@@ -8,6 +8,7 @@ class SubcategoryInline(admin.TabularInline):
     extra = 1
     fields = (
         "name",
+        "name_eng",
         "slug",
         "is_active",
         "is_hidden",
