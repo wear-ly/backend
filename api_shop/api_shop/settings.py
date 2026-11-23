@@ -270,6 +270,11 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 
+CELERY_TASK_ALWAYS_EAGER = getenv_bool(
+    "CELERY_TASK_ALWAYS_EAGER",
+    default=False,
+)
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
