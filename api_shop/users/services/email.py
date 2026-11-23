@@ -1,11 +1,14 @@
-from django.conf import settings
+import logging
+
 from django.contrib.auth.tokens import default_token_generator
 from django.core.cache import cache
-from django.core.mail import send_mail
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
+from users.services.google_apps_script import send_email_via_google_apps_script
 from users.utils import gen_code
+
+logger = logging.getLogger(__name__)
 
 
 def generate_uid_token(user):
@@ -32,7 +35,17 @@ def send_email_code(user, task_type: str, request=None):
             case _:
                 return
 
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+        send_email_via_google_apps_script(
+            to=user.email,
+            subject=subject,
+            body=message,
+        )
 
     except Exception:
         cache.delete(f"lock:{task_type}:{user.id}")
+        logger.exception(
+            "Failed to send %s email for user_id=%s",
+            task_type,
+            user.id,
+        )
+        raise
