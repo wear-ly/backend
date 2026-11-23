@@ -24,18 +24,18 @@ def health_check(request):
     except OperationalError:
         db_healthy = False
 
-    redis_healthy = True
+    cache_healthy = True
     try:
         cache_key = "health_check_probe"
         cache.set(cache_key, "ok", timeout=5)
-        redis_healthy = cache.get(cache_key) == "ok"
+        cache_healthy = cache.get(cache_key) == "ok"
     except Exception:
-        redis_healthy = False
+        cache_healthy = False
 
     payload = {
         "status": "ok" if db_healthy else "error",
         "database": "ok" if db_healthy else "unreachable",
-        "redis": "ok" if redis_healthy else "unreachable",
+        "cache": "ok" if cache_healthy else "unreachable",
         "environment": settings.APP_ENV,
         "version": os.getenv("RENDER_GIT_COMMIT", "unknown"),
     }

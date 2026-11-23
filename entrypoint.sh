@@ -13,6 +13,9 @@ python api_shop/manage.py collectstatic --no-input
 echo "--> Applying database migrations..."
 python api_shop/manage.py migrate
 
+echo "--> Creating database cache table..."
+python api_shop/manage.py createcachetable
+
 echo "--> Starting Gunicorn..."
 
-exec /opt/venv/bin/gunicorn --bind 0.0.0.0:"${PORT:-8000}" --workers 3 --access-logfile - --chdir /app/api_shop api_shop.wsgi:application
+exec /opt/venv/bin/gunicorn --bind 0.0.0.0:"${PORT:-8000}" --workers "${WEB_CONCURRENCY:-1}" --access-logfile - --chdir /app/api_shop api_shop.wsgi:application
