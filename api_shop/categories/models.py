@@ -5,6 +5,11 @@ from django.db import models
 
 class Category(TimeStampMixin):
     name = models.CharField(max_length=255, unique=True)
+    name_eng = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Name_ENG",
+    )
     slug = models.SlugField(unique=True)
 
     is_active = models.BooleanField(default=True)
@@ -36,6 +41,11 @@ class Subcategory(TimeStampMixin):
     )
 
     name = models.CharField(max_length=255, unique=True)
+    name_eng = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Name_ENG",
+    )
     slug = models.SlugField(unique=True)
 
     is_active = models.BooleanField(default=True)

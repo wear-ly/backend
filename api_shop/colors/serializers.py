@@ -9,6 +9,7 @@ class ColorSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
+            "name_eng",
             "hex_code",
             "is_active",
         )

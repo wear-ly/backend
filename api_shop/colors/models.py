@@ -7,6 +7,11 @@ class Color(TimeStampMixin):
         max_length=50,
         unique=True,
     )
+    name_eng = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="Name_ENG",
+    )
 
     hex_code = models.CharField(
         max_length=7,
