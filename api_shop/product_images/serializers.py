@@ -10,9 +10,11 @@ class ProductImageSerializer(serializers.ModelSerializer):
             "id",
             "product_variant",
             "image",
+            "media_type",
             "is_main",
             "sort_order",
         )
+        read_only_fields = ("media_type",)
 
 
 class ProductImagesForFavoriteSerializer(serializers.ModelSerializer):
@@ -21,6 +23,8 @@ class ProductImagesForFavoriteSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "image",
+            "media_type",
             "is_main",
             "sort_order",
         )
+        read_only_fields = ("media_type",)
