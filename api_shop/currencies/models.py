@@ -29,6 +29,7 @@ class Currency(TimeStampMixin):
             models.Index(fields=["amount"]),
         ]
 
+
 class ExchangeRate(models.Model):
     from_currency = models.CharField(max_length=3)
     to_currency = models.CharField(max_length=3)

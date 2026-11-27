@@ -1,7 +1,7 @@
-import requests
 from decimal import Decimal
 from unittest.mock import patch
 
+import requests
 from django.test import TestCase
 
 from currencies.models import ExchangeRate
@@ -9,7 +9,6 @@ from currencies.services import update_usd_exchange_rate
 
 
 class ExchangeRateTests(TestCase):
-
     @patch("currencies.services.requests.get")
     def test_exchange_rate_saved_to_database(self, mock_get):
         mock_get.return_value.json.return_value = [
@@ -38,9 +37,7 @@ class ExchangeRateTests(TestCase):
             rate=Decimal("45.86"),
         )
 
-        mock_get.side_effect = requests.RequestException(
-            "Monobank unavailable"
-        )
+        mock_get.side_effect = requests.RequestException("Monobank unavailable")
 
         result = update_usd_exchange_rate()
 
@@ -54,7 +51,6 @@ class ExchangeRateTests(TestCase):
 
 
 class ExchangeRateEndpointTests(TestCase):
-
     def test_missing_token_returns_403(self):
         with patch.dict("os.environ", {"EXCHANGE_RATE_UPDATE_TOKEN": "test-secret"}):
             response = self.client.post("/api/currencies/refresh-exchange-rate/")

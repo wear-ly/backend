@@ -1,6 +1,5 @@
-from django.core.management.base import BaseCommand
-
 from currencies.services import update_usd_exchange_rate
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
@@ -15,6 +14,4 @@ class Command(BaseCommand):
             )
             return
 
-        self.stdout.write(
-            self.style.SUCCESS(f"USD/UAH exchange rate updated: {rate}")
-        )
+        self.stdout.write(self.style.SUCCESS(f"USD/UAH exchange rate updated: {rate}"))

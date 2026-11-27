@@ -7,10 +7,8 @@ from rest_framework.decorators import (
     authentication_classes,
     permission_classes,
 )
-from rest_framework.permissions import AllowAny
-
-
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.permissions import AllowAny
 
 from .models import Currency
 from .serializers import CurrencySerializer
@@ -34,9 +32,7 @@ def refresh_exchange_rate(request):
     expected_token = os.getenv("EXCHANGE_RATE_UPDATE_TOKEN", "")
     provided_token = request.headers.get("X-Exchange-Token", "")
 
-    if not expected_token or not secrets.compare_digest(
-        provided_token, expected_token
-    ):
+    if not expected_token or not secrets.compare_digest(provided_token, expected_token):
         return JsonResponse({"error": "Forbidden"}, status=403)
 
     rate = update_usd_exchange_rate()

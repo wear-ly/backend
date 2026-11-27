@@ -20,6 +20,7 @@ class CurrencyAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     list_select_related = ("product_variant",)
 
+
 @admin.register(ExchangeRate)
 class ExchangeRateAdmin(admin.ModelAdmin):
     list_display = ("from_currency", "to_currency", "rate", "updated_at")
