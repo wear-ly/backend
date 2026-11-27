@@ -1,10 +1,38 @@
 import re
+from decimal import Decimal
 
+import requests
 from django.conf import settings
 from django.db.models import DecimalField, OuterRef, Subquery
 from rest_framework import serializers
 
-from .models import Currency
+from .models import Currency, ExchangeRate
+
+MONOBANK_URL = "https://api.monobank.ua/bank/currency"
+
+
+def update_usd_exchange_rate():
+    try:
+        response = requests.get(MONOBANK_URL, timeout=10)
+        response.raise_for_status()
+
+        for currency in response.json():
+            if currency["currencyCodeA"] == 840 and currency["currencyCodeB"] == 980:
+                rate = Decimal(str(currency["rateSell"]))
+
+                ExchangeRate.objects.update_or_create(
+                    from_currency="USD",
+                    to_currency="UAH",
+                    defaults={"rate": rate},
+                )
+
+                return rate
+
+    except (requests.RequestException, ValueError, KeyError, TypeError):
+        return None
+
+    return None
+
 
 CURRENCY_CODE_RE = re.compile(r"^[A-Z]{3}$")
 
